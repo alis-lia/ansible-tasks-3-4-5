@@ -83,3 +83,54 @@ MEJORAS APLICADAS
   y sin "zypper update" completo. El callback profile_tasks muestra
   cuanto tarda cada tarea.
 - Roles independientes y reutilizables, con plantillas Jinja2.
+
+
+
+=====================================================================
+ DESTINO
+=====================================================================
+
+su -
+echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/root.conf
+systemctl enable --now sshd && systemctl restart sshd
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target packagekit
+systemctl restart NetworkManager
+ip -4 a
+ping -c 2 google.com
+rpm -q apache2 mariadb samba vsftpd postgresql-server
+
+
+=====================================================================
+ MASTER
+=====================================================================
+
+su -c "zypper in -y ansible sshpass git samba-client lftp postgresql"
+git clone https://github.com/alis-lia/ansible-tasks-3-4-5.git
+cd ansible-tasks-3-4-5
+chmod 755 .
+cat README.txt
+nano inventory/hosts.yml
+ansible all -k --ask-vault-pass -m ping
+time ansible-playbook site.yml -k --ask-vault-pass
+time ansible-playbook site.yml -k --ask-vault-pass
+
+SSH password   -> contrasena de root del DESTINO
+Vault password -> se entrega junto al README en Classroom
+
+
+=====================================================================
+ VERIFICACION (MASTER)
+=====================================================================
+
+ansible all -k --ask-vault-pass -m shell -a "systemctl is-active apache2 mariadb smb vsftpd postgresql"
+ansible-vault view group_vars/all/vault.yml
+smbclient //IP_DESTINO/compartido -U alumno -c "put /etc/hostname prueba.txt; ls"
+ssh root@IP_DESTINO "ls -l /srv/samba/compartido"
+lftp -u alumno -e "ls; bye" IP_DESTINO
+psql "host=IP_DESTINO dbname=aso_pgdb user=aso_pg sslmode=require" -c "\conninfo"
+psql "host=IP_DESTINO dbname=aso_pgdb user=aso_pg sslmode=disable" -c "\conninfo"
+
+Navegador:
+http://172.20.10.6/
+http://172.20.10.6/phpmyadmin
+
